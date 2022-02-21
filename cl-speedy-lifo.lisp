@@ -172,8 +172,13 @@
 
 (defun dequeue (queue &optional (keep-in-queue t))
   "Dequeues QUEUE. Return the element dequed.
+
 When `keep-in-queue' sets to nil, the dequeued val will no longer keep an ref in the queue,
-this is useful when the queue holds very big objects"
+this is useful when the queue holds very big objects.
+
+Making `keep-in-queue' as an optional parameter bring some performance penalty,
+about 5 seconds slower than that as a non-optional parameter in a 10^9 pushes+pop operations test,
+but it's still very fast."
   (%dequeue queue keep-in-queue))
 
 
