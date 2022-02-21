@@ -1,8 +1,6 @@
 
 (defpackage #:cl-speedy-lifo-tests
   (:use #:cl #:fiveam #:cl-speedy-lifo)
-  (:shadow :push)
-  (:shadow :pop)
   (:nicknames #:lifo-tests)
   (:export #:run!
            #:all-tests))
