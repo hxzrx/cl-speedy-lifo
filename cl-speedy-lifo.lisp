@@ -1,8 +1,6 @@
 
 (cl:defpackage #:cl-speedy-lifo
   (:use :cl)
-  (:shadow :push)
-  (:shadow :pop)
   (:nicknames :speedy-lifo)
   (:export
    :make-queue
@@ -14,11 +12,11 @@
    :enqueue
    :dequeue
    :make-lifo
-   :lilo-count
-   :lilo-length
-   :pop
-   :push
-   :peek
+   :lifo-count
+   :lifo-length
+   :lifo-pop
+   :lifo-push
+   :lifo-peek
    :*overflow-flag*
    :*underflow-flag*))
 
@@ -185,6 +183,8 @@ but it's still very fast."
 (setf (fdefinition 'make-lifo) #'make-queue)
 (setf (fdefinition 'lifo-count) #'queue-count)
 (setf (fdefinition 'lifo-length) #'queue-length)
-(setf (fdefinition 'push) #'enqueue)
-(setf (fdefinition 'pop) #'dequeue)
-(setf (fdefinition 'peek) #'queue-peek)
+(setf (fdefinition 'lifo-full-p) #'queue-full-p)
+(setf (fdefinition 'lifo-empty-p) #'queue-empty-p)
+(setf (fdefinition 'lifo-push) #'enqueue)
+(setf (fdefinition 'lifo-pop) #'dequeue)
+(setf (fdefinition 'lifo-peek) #'queue-peek)
