@@ -45,13 +45,19 @@ which is inspired by cl-speedy-queue <https://github.com/zkat/cl-speedy-queue>.
 *[function]* `lifo-length queue`
   Alias for queue-length.
 
-*[function]* `push object queue`
+*[function]* `lifo-full-p queue`
+  Alias for queue-full-p.
+
+*[function]* `lifo-empty-p queue`
+  Alias for queue-empty-p.
+
+*[function]* `lifo-push object queue`
   Alias for enqueue.
 
-*[function]* `pop queue`
+*[function]* `lifo-pop queue`
   Alias for dequeue.
 
-*[function]* `peek queue`
+*[function]* `lifo-peek queue`
   Alias for queue-peek.
 
 
