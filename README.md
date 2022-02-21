@@ -57,7 +57,9 @@ which is inspired by cl-speedy-queue <https://github.com/zkat/cl-speedy-queue>.
 
 # Performance
 
-| 10^n | LIFO Queue (without consing timed) | LIFO Queue(with consing timed) |            List Queue             |
+Now let's compared the time costs of push+pop operations, for this speedy-lifo and the build-in list.
+
+| 10^n | LIFO Queue (without consing timed) | LIFO Queue(with consing timed) |            LIST Queue             |
 | :--: | :--------------------------------: | :----------------------------: | :-------------------------------: |
 |  3   |               0.000                |             0.000              |               0.000               |
 |  4   |               0.000                |             0.000              |               0.000               |
@@ -65,10 +67,10 @@ which is inspired by cl-speedy-queue <https://github.com/zkat/cl-speedy-queue>.
 |  6   |               0.016                |             0.016              |               0.012               |
 |  7   |               0.128                |             0.140              |               0.136               |
 |  8   |               1.248                |             1.476              |               2.548               |
-|  9   |               12.560               |             16.376             | sbcl failed without any feedbacks |
+|  9   |               12.560               |             16.376             |                 -                 |
 
-Time costed compared cl-speedy-lifo queues with list lifo queues in seconds.
-
+All time units are in seconds.
+Note that when timing the push+pop operations with LIST Queue for 10^9 times, sbcl's heap exhausted during garbage collection.
 
 
 ```commonlisp
