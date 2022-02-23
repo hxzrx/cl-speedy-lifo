@@ -126,13 +126,13 @@
       ;;(error 'queue-overflow-error :queue queue :item object)
       *overflow-flag*))
 
-(define-speedy-function %dequeue (queue keep-in-queue &aux (out (%queue-out queue)))
+(define-speedy-function %dequeue (queue keep-in-queue-p &aux (out (%queue-out queue)))
   "DEQUEUE, decrements QUEUE's entry pointer, and returns the previous top ref"
   (declare (fixnum out))
-  (declare (boolean keep-in-queue))
+  (declare (boolean keep-in-queue-p))
   (if (/= (the fixnum (svref queue 0)) 0)
       (prog1 (svref queue out)
-        (unless keep-in-queue (setf (svref queue out) nil))
+        (unless keep-in-queue-p (setf (svref queue out) nil))
         (decf (the fixnum (svref queue 0))))
       ;;(error 'queue-underflow-error :queue queue)
       *underflow-flag*))
@@ -176,17 +176,17 @@
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   (%enqueue object queue))
 
-(defun dequeue (queue &optional (keep-in-queue t))
+(defun dequeue (queue &optional (keep-in-queue-p t))
   "Dequeues QUEUE. Return the element dequed.
 
-When `keep-in-queue' sets to nil, the dequeued val will no longer keep an ref in the queue,
+When `keep-in-queue-p' sets to nil, the dequeued val will no longer keep an ref in the queue,
 this is useful when the queue holds very big objects.
 
-Making `keep-in-queue' as an optional parameter bring some performance penalty,
+Making `keep-in-queue-p' as an optional parameter bring some performance penalty,
 about 5 seconds slower than that as a non-optional parameter in a 10^9 pushes+pop operations test,
 but it's still very fast."
   (declare (optimize (speed 3) (safety 0) (debug 0)))
-  (%dequeue queue keep-in-queue))
+  (%dequeue queue keep-in-queue-p))
 
 
 (setf (fdefinition 'make-lifo) #'make-queue)
