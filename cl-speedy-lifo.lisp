@@ -23,6 +23,9 @@
 
 (cl:in-package #:cl-speedy-lifo)
 
+(defvar *overflow-flag* :overflow-A6AC128A-4385-4C54-B384-8D687456C10A)
+(defvar *underflow-flag* :underflow-80B88679-7DD0-499E-BAE9-673167980515)
+
 (defmacro define-speedy-function (name args &body body)
   `(progn (declaim (inline ,name))
           (defun ,name ,args
@@ -50,9 +53,6 @@
   (:report (lambda (c s)
              (format s "Queue ~S is empty, and can't be dequeued anymore"
                      (queue-condition-queue c)))))
-
-(defvar *overflow-flag* :overflow-A6AC128A-4385-4C54-B384-8D687456C10A)
-(defvar *underflow-flag* :underflow-80B88679-7DD0-499E-BAE9-673167980515)
 
 (define-speedy-function %make-queue (length)
   "Creates a new queue of maximum size LENGTH"
@@ -129,6 +129,7 @@
 (define-speedy-function %dequeue (queue keep-in-queue &aux (out (%queue-out queue)))
   "DEQUEUE, decrements QUEUE's entry pointer, and returns the previous top ref"
   (declare (fixnum out))
+  (declare (boolean keep-in-queue))
   (if (/= (the fixnum (svref queue 0)) 0)
       (prog1 (svref queue out)
         (unless keep-in-queue (setf (svref queue out) nil))
@@ -140,32 +141,39 @@
 
 (defun make-queue (size)
   "Makes a queue of maximum size SIZE"
+  (declare (fixnum size))
   (%make-queue size))
 
 (defun queue-count (queue)
   "Returns the current size of QUEUE"
+  (declare (optimize (speed 3) (safety 0) (debug 0)))
   (%queue-count queue))
 
 (defun queue-length (queue)
   "Returns the maximum size of QUEUE"
+  (declare (optimize (speed 3) (safety 0) (debug 0)))
   (%queue-length queue))
 
 (defun queue-peek (queue)
   "Returns the next item that would be dequeued without dequeueing it."
+  (declare (optimize (speed 3) (safety 0) (debug 0)))
   (if (eq (svref queue 0) 0)
       (values nil nil)
       (values (%queue-peek queue) t)))
 
 (defun queue-full-p (queue)
   "Returns NIL if more items can be enqueued."
+  (declare (optimize (speed 3) (safety 0) (debug 0)))
   (%queue-full-p queue))
 
 (defun queue-empty-p (queue)
   "Tests whether QUEUE is empty"
+  (declare (optimize (speed 3) (safety 0) (debug 0)))
   (%queue-empty-p queue))
 
 (defun enqueue (object queue)
   "Enqueues OBJECT in QUEUE. Return `object' instead of the whole `queue'"
+  (declare (optimize (speed 3) (safety 0) (debug 0)))
   (%enqueue object queue))
 
 (defun dequeue (queue &optional (keep-in-queue t))
@@ -177,6 +185,7 @@ this is useful when the queue holds very big objects.
 Making `keep-in-queue' as an optional parameter bring some performance penalty,
 about 5 seconds slower than that as a non-optional parameter in a 10^9 pushes+pop operations test,
 but it's still very fast."
+  (declare (optimize (speed 3) (safety 0) (debug 0)))
   (%dequeue queue keep-in-queue))
 
 
