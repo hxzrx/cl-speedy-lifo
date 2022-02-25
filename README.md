@@ -36,6 +36,14 @@ which is inspired by cl-speedy-queue <https://github.com/zkat/cl-speedy-queue>.
 
   Returns NIL if there are still items in the queue.
 
+*[function]* `queue-to-list queue`
+
+ Convert a LIFO queue to a list, with the popping order kept.
+
+*[function]* `list-to-queue list`
+
+ Convert a list to a LIFO queue, with the popping order kept.
+
 *[function]* `make-lifo size`
   Alias for make-queue.
 
@@ -50,6 +58,12 @@ which is inspired by cl-speedy-queue <https://github.com/zkat/cl-speedy-queue>.
 
 *[function]* `lifo-empty-p queue`
   Alias for queue-empty-p.
+
+*[function]* `lifo-to-list queue`
+  Alias for queue-to-list.
+
+*[function]* `list-to-lifo queue`
+  Alias for list-to-queue.
 
 *[function]* `lifo-push object queue`
   Alias for enqueue.
