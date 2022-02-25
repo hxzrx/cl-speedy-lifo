@@ -13,13 +13,15 @@
 
 (in-suite all-tests)
 
-(defparameter *loop-times* 1000)
+(defparameter *loop-times* 10000)
 
 (defun make-random-list (len &optional (max 5))
   (loop for i below len
         collect (random max)))
 
 (test make-queue
+  #+sbcl (sb-ext:gc :full t)
+  #+ccl (ccl:gc)
   (dotimes (i *loop-times*)
     (let* ((n (1+ (random 100)))
            (queue (make-queue n)))
@@ -32,6 +34,8 @@
                      (is (eq nil (svref queue i)))))))))
 
 (test queue-count/queue-length/enqueue/-num
+  #+sbcl (sb-ext:gc :full t)
+  #+ccl (ccl:gc)
   (dotimes (i *loop-times*)
     (let* ((n (1+ (random 20))) ; queue length
            (queue (make-queue n))
@@ -45,6 +49,8 @@
       (is (= n (queue-length queue))))))
 
 (test queue-count/queue-length/enqueue/-symbol
+  #+sbcl (sb-ext:gc :full t)
+  #+ccl (ccl:gc)
   (dotimes (i *loop-times*)
     (let* ((n (1+ (random 20))) ; queue length
            (queue (make-queue n))
@@ -58,6 +64,8 @@
       (is (= n (queue-length queue))))))
 
 (test queue-count/queue-length/enqueue/-string
+  #+sbcl (sb-ext:gc :full t)
+  #+ccl (ccl:gc)
   (dotimes (i *loop-times*)
     (let* ((n (1+ (random 20))) ; queue length
            (queue (make-queue n))
@@ -71,6 +79,8 @@
       (is (= n (queue-length queue))))))
 
 (test queue-to-list
+  #+sbcl (sb-ext:gc :full t)
+  #+ccl (ccl:gc)
   (dotimes (i *loop-times*)
     (let* ((n (1+ (random 20))) ; queue length
            (queue (make-queue n))
@@ -84,6 +94,8 @@
         (is (= (pop lst) (dequeue queue)))))))
 
 (test enqueue
+  #+sbcl (sb-ext:gc :full t)
+  #+ccl (ccl:gc)
   (dotimes (i *loop-times*)
     (let* ((n (1+ (random 20))) ; queue length
            (queue (make-queue n))
@@ -98,6 +110,8 @@
                         (enqueue element queue)))))))
 
 (test dequeue
+  #+sbcl (sb-ext:gc :full t)
+  #+ccl (ccl:gc)
   (dotimes (i *loop-times*)
     (let* ((n (1+ (random 20))) ; queue length
            (queue (make-queue n))
