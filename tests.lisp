@@ -13,7 +13,7 @@
 
 (in-suite all-tests)
 
-(defparameter *loop-times* 10000)
+(defparameter *loop-times* 1000)
 
 (defun make-random-list (len &optional (max 5))
   (loop for i below len
@@ -69,6 +69,19 @@
           (is (equal rnd (enqueue rnd queue)))))
       (is (= k (queue-count queue)))
       (is (= n (queue-length queue))))))
+
+(test queue-to-list
+  (dotimes (i *loop-times*)
+    (let* ((n (1+ (random 20))) ; queue length
+           (queue (make-queue n))
+           (k (random n))
+           (lst nil))
+      (dotimes (j k)
+        (enqueue (random 5) queue))
+      (setf lst (queue-to-list queue))
+      (is (= k (length lst)))
+      (dotimes (j k)
+        (is (= (pop lst) (dequeue queue)))))))
 
 (test enqueue
   (dotimes (i *loop-times*)
