@@ -4,6 +4,8 @@
   (:nicknames :speedy-lifo)
   (:export
    :make-queue
+   :queue-to-list
+   :list-to-queue
    :queue-count
    :queue-length
    :queue-peek
@@ -12,6 +14,8 @@
    :enqueue
    :dequeue
    :make-lifo
+   :lifo-to-list
+   :list-to-lifo
    :lifo-count
    :lifo-length
    :lifo-pop
@@ -120,7 +124,7 @@
 (define-speedy-function %enqueue (object queue &aux (in (%queue-in queue)))
   (declare (fixnum in))
   "Enqueue OBJECT and increment QUEUE's entry pointer"
-  (if (/= in (the fixnum (length queue)))
+  (if (< in (the fixnum (length queue))) ;(/= in (the fixnum (length queue))) ; 02/24
       (prog1 (setf (svref queue in) object)
         (incf (the fixnum (svref queue 0))))
       ;;(error 'queue-overflow-error :queue queue :item object)
@@ -136,6 +140,7 @@
         (decf (the fixnum (svref queue 0))))
       ;;(error 'queue-underflow-error :queue queue)
       *underflow-flag*))
+
 
 ;;; Now that all the backend functions are defined, we can define the API:
 
@@ -171,6 +176,20 @@
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   (%queue-empty-p queue))
 
+(defun queue-to-list (queue)
+  "Convert a LIFO queue to a list, with the popping order kept."
+  (declare (optimize (speed 3) (safety 0) (debug 0)))
+  (declare (simple-vector queue))
+  (reverse (coerce (subseq queue 1 (1+ (the fixnum (svref queue 0)))) 'list)))
+
+(defun list-to-queue (lst)
+  "Convert a list to a LIFO queue, with the popping order kept."
+  (declare (optimize (speed 3) (safety 0) (debug 0)))
+  (declare (list lst))
+  (let ((queue (make-lifo (length lst))))
+    (dolist (item (reverse lst))
+      (%enqueue item queue))))
+
 (defun enqueue (object queue)
   "Enqueues OBJECT in QUEUE. Return `object' instead of the whole `queue'"
   (declare (optimize (speed 3) (safety 0) (debug 0)))
@@ -189,6 +208,7 @@ but it's still very fast."
   (%dequeue queue keep-in-queue-p))
 
 
+
 (setf (fdefinition 'make-lifo) #'make-queue)
 (setf (fdefinition 'lifo-count) #'queue-count)
 (setf (fdefinition 'lifo-length) #'queue-length)
@@ -197,3 +217,5 @@ but it's still very fast."
 (setf (fdefinition 'lifo-push) #'enqueue)
 (setf (fdefinition 'lifo-pop) #'dequeue)
 (setf (fdefinition 'lifo-peek) #'queue-peek)
+(setf (fdefinition 'lifo-to-list) #'queue-to-list)
+(setf (fdefinition 'list-to-lifo) #'list-to-queue)
