@@ -13,6 +13,7 @@
    :queue-empty-p
    :enqueue
    :dequeue
+   :queue-find
    :make-lifo
    :lifo-to-list
    :list-to-lifo
@@ -207,6 +208,14 @@ but it's still very fast."
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   (%dequeue queue keep-in-queue-p))
 
+(defun queue-find (item queue &key (key #'identity) (test #'eql))
+  "Find `item' in `queue'"
+  (declare (optimize (speed 3) (safety 0) (debug 0)))
+  (declare (function key test))
+  (if (queue-empty-p queue)
+      nil
+      (let ((in (%queue-in queue)))
+        (find item queue :start 1 :end in :key key :test test))))
 
 
 (setf (fdefinition 'make-lifo) #'make-queue)
