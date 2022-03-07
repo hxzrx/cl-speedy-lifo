@@ -124,3 +124,20 @@
                         (dequeue queue))))
       (is (eql *underflow-flag*
                (dequeue queue))))))
+
+(test queue-flush
+  #+sbcl (sb-ext:gc :full t)
+  #+ccl (ccl:gc)
+  (dotimes (i *loop-times*)
+    (let* ((n (1+ (random 20))) ; queue length
+           (queue (make-queue n))
+           (k (random n)) ; fill num
+           (lst (make-random-list k)))
+      (queue-flush queue)
+      (is (eql t (queue-empty-p queue)))
+      (loop for element in lst
+            do (enqueue element queue))
+      (queue-flush queue)
+      (is (eql t (queue-empty-p queue)))
+      (is (eql *underflow-flag*
+               (dequeue queue))))))

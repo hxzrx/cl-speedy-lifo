@@ -14,6 +14,7 @@
    :enqueue
    :dequeue
    :queue-find
+   :queue-flush
    :make-lifo
    :lifo-to-list
    :list-to-lifo
@@ -142,6 +143,10 @@
       ;;(error 'queue-underflow-error :queue queue)
       *underflow-flag*))
 
+(define-speedy-function %queue-flush (queue)
+  "Returns QUEUE's effective length"
+  (setf (svref queue 0) 0)
+  queue)
 
 ;;; Now that all the backend functions are defined, we can define the API:
 
@@ -217,6 +222,9 @@ but it's still very fast."
       (let ((in (%queue-in queue)))
         (find item queue :start 1 :end in :key key :test test))))
 
+(defun queue-flush (queue)
+  "Make `queue' empty"
+  (%queue-flush queue))
 
 (setf (fdefinition 'make-lifo) #'make-queue)
 (setf (fdefinition 'lifo-count) #'queue-count)
