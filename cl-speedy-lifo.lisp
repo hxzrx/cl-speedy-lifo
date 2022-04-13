@@ -1,4 +1,3 @@
-
 (cl:defpackage #:cl-speedy-lifo
   (:use :cl)
   (:nicknames :speedy-lifo)
@@ -13,6 +12,8 @@
    :queue-empty-p
    :enqueue
    :dequeue
+   :enqueue-safe
+   :dequeue-safe
    :queue-find
    :queue-flush
    :make-lifo
@@ -22,15 +23,43 @@
    :lifo-length
    :lifo-pop
    :lifo-push
+   :lifo-pop-safe
+   :lifo-push-safe
    :lifo-peek
    :*overflow-flag*
    :*underflow-flag*))
-
 
 (cl:in-package #:cl-speedy-lifo)
 
 (defvar *overflow-flag* :overflow-A6AC128A-4385-4C54-B384-8D687456C10A)
 (defvar *underflow-flag* :underflow-80B88679-7DD0-499E-BAE9-673167980515)
+
+(defmacro compare-and-swap (place old new)
+  "Atomically stores NEW in `place' if `old' value matches the current value of `place'.
+Two values are considered to match if they are EQ.
+return T if swap success, otherwise return NIL."
+  ;; https://github.com/Shinmera/atomics/blob/master/atomics.lisp
+  #+sbcl
+  (let ((tmp (gensym "OLD")))
+    `(let ((,tmp ,old)) (eq ,tmp (sb-ext:cas ,place ,tmp ,new))))
+  #+ccl
+  `(ccl::conditional-store ,place ,old ,new)
+  #+clasp
+  (let ((tmp (gensym "OLD")))
+    `(let ((,tmp ,old)) (eq ,tmp (mp:cas ,place ,tmp ,new))))
+  #+ecl
+  (let ((tmp (gensym "OLD")))
+    `(let ((,tmp ,old)) (eq ,tmp (mp:compare-and-swap ,place ,tmp ,new))))
+  #+allegro
+  `(if (excl:atomic-conditional-setf ,place ,new ,old) T NIL)
+  #+lispworks
+  `(system:compare-and-swap ,place ,old ,new)
+  #+mezzano
+  (let ((tmp (gensym "OLD")))
+    `(let ((,tmp ,old))
+       (eq ,tmp (mezzano.extensions:compare-and-swap ,place ,tmp ,new))))
+  #-(or allegro ccl clasp ecl lispworks mezzano sbcl)
+  (no-support 'CAS))
 
 (defmacro define-speedy-function (name args &body body)
   `(progn (declaim (inline ,name))
@@ -224,7 +253,46 @@ but it's still very fast."
 
 (defun queue-flush (queue)
   "Make `queue' empty"
+  (declare (optimize (speed 3) (safety 0) (debug 0)))
   (%queue-flush queue))
+
+
+;; ------- thread safe version -------
+
+(define-speedy-function %enqueue-safe (object queue)
+  "Enqueue OBJECT and increment QUEUE's entry pointer, thread safe."
+  (let ((len (length (the simple-array queue))))
+    (loop (let* ((entry (the fixnum (svref queue 0)))
+                 (new-entry (1+ entry)))
+            (if (< new-entry len)
+                (when (compare-and-swap (svref queue 0) entry new-entry)
+                  (setf (svref queue new-entry) object)
+                  (return object))
+                (return *overflow-flag*))))))
+
+(define-speedy-function %dequeue-safe (queue keep-in-queue-p)
+  "DEQUEUE, decrements QUEUE's entry pointer, and returns the previous top ref, thread safe."
+  (loop (let* ((out (the fixnum (svref queue 0)))
+               (new-out (1- out)))
+          (if (/= out 0)
+              (when (compare-and-swap (svref queue 0) out new-out)
+                (if keep-in-queue-p
+                    (return (svref queue out))
+                    (let ((out-val nil))
+                      (rotatef (svref queue out) out-val)
+                      (return out-val))))
+              (return *underflow-flag*)))))
+
+(defun enqueue-safe (object queue)
+  "Thread safe version of enqueue."
+  (declare (optimize (speed 3) (safety 0) (debug 0)))
+  (%enqueue-safe object queue))
+
+(defun dequeue-safe (queue &optional (keep-in-queue-p t))
+  "Thread safe version of dequeue."
+  (declare (optimize (speed 3) (safety 0) (debug 0)))
+  (%dequeue-safe queue keep-in-queue-p))
+
 
 (setf (fdefinition 'make-lifo) #'make-queue)
 (setf (fdefinition 'lifo-count) #'queue-count)
@@ -233,6 +301,8 @@ but it's still very fast."
 (setf (fdefinition 'lifo-empty-p) #'queue-empty-p)
 (setf (fdefinition 'lifo-push) #'enqueue)
 (setf (fdefinition 'lifo-pop) #'dequeue)
+(setf (fdefinition 'lifo-push-safe) #'enqueue-safe)
+(setf (fdefinition 'lifo-pop-safe) #'dequeue-safe)
 (setf (fdefinition 'lifo-peek) #'queue-peek)
 (setf (fdefinition 'lifo-to-list) #'queue-to-list)
 (setf (fdefinition 'list-to-lifo) #'list-to-queue)

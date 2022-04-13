@@ -1,4 +1,3 @@
-
 (asdf:defsystem #:cl-speedy-lifo
   :author "He Xiangzhi <hexiangzhi@gmail.com>"
   :licence "MIT"
@@ -13,6 +12,7 @@ which is inspired by cl-speedy-queue"
   :license "MIT"
   :serial t
   :depends-on (:cl-speedy-lifo
+               :bordeaux-threads
                :fiveam)
   :components ((:file "tests"))
   :perform (test-op (o s)

@@ -2,6 +2,7 @@
 
 cl-speedy-lifo is a portable, non-consing, optimized lifo queue (stack) implementation,
 which is inspired by cl-speedy-queue <https://github.com/zkat/cl-speedy-queue>.
+
 # API
 
 *[function]* `make-queue size`
@@ -12,9 +13,17 @@ which is inspired by cl-speedy-queue <https://github.com/zkat/cl-speedy-queue>.
 
   Enqueues OBJECT in QUEUE.
 
+*[function]* `enqueue-safe object queue`
+
+  Thread safe version of `enqueue`.
+
 *[function]* `dequeue queue keep-in-queue`
 
   Dequeues QUEUE. If keep-in-queue sets to nil, the dequeued val will no longer keep an ref in the queue.
+
+*[function]* `dequeue-safe queue keep-in-queue`
+
+  Thread safe version of `dequeue`
 
 *[function]* `queue-count queue`
 
