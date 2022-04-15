@@ -31,8 +31,9 @@
 
 (cl:in-package #:cl-speedy-lifo)
 
-(defvar *overflow-flag* :overflow-A6AC128A-4385-4C54-B384-8D687456C10A)
-(defvar *underflow-flag* :underflow-80B88679-7DD0-499E-BAE9-673167980515)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defvar *overflow-flag* :overflow-A6AC128A-4385-4C54-B384-8D687456C10A)
+  (defvar *underflow-flag* :underflow-80B88679-7DD0-499E-BAE9-673167980515))
 
 (defmacro compare-and-swap (place old new)
   "Atomically stores NEW in `place' if `old' value matches the current value of `place'.
