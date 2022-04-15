@@ -159,7 +159,7 @@ return T if swap success, otherwise return NIL."
       (prog1 (setf (svref queue in) object)
         (incf (the fixnum (svref queue 0))))
       ;;(error 'queue-overflow-error :queue queue :item object)
-      *overflow-flag*))
+      #.*overflow-flag*))
 
 (define-speedy-function %dequeue (queue keep-in-queue-p &aux (out (%queue-out queue)))
   "DEQUEUE, decrements QUEUE's entry pointer, and returns the previous top ref"
@@ -170,7 +170,7 @@ return T if swap success, otherwise return NIL."
         (unless keep-in-queue-p (setf (svref queue out) nil))
         (decf (the fixnum (svref queue 0))))
       ;;(error 'queue-underflow-error :queue queue)
-      *underflow-flag*))
+      #.*underflow-flag*))
 
 (define-speedy-function %queue-flush (queue)
   "Returns QUEUE's effective length"
@@ -268,7 +268,7 @@ but it's still very fast."
                 (when (compare-and-swap (svref queue 0) entry new-entry)
                   (setf (svref queue new-entry) object)
                   (return object))
-                (return *overflow-flag*))))))
+                (return #.*overflow-flag*))))))
 
 (define-speedy-function %dequeue-safe (queue keep-in-queue-p)
   "DEQUEUE, decrements QUEUE's entry pointer, and returns the previous top ref, thread safe."
@@ -281,7 +281,7 @@ but it's still very fast."
                     (let ((out-val nil))
                       (rotatef (svref queue out) out-val)
                       (return out-val))))
-              (return *underflow-flag*)))))
+              (return #.*underflow-flag*)))))
 
 (defun enqueue-safe (object queue)
   "Thread safe version of enqueue."
