@@ -1,6 +1,6 @@
 (cl:defpackage #:cl-speedy-lifo
   (:use :cl)
-  (:nicknames :speedy-lifo)
+  (:nicknames :lifo)
   (:export
    :make-queue
    :queue-to-list
@@ -15,13 +15,6 @@
    :queue-find
    :queue-flush
    :make-lifo
-   :lifo-to-list
-   :list-to-lifo
-   :lifo-count
-   :lifo-length
-   :lifo-pop
-   :lifo-push
-   :lifo-peek
    :*overflow-flag*
    :*underflow-flag*))
 
