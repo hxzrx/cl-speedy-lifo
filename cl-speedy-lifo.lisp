@@ -12,8 +12,6 @@
    :queue-empty-p
    :enqueue
    :dequeue
-   :enqueue-safe
-   :dequeue-safe
    :queue-find
    :queue-flush
    :make-lifo
@@ -23,8 +21,6 @@
    :lifo-length
    :lifo-pop
    :lifo-push
-   :lifo-pop-safe
-   :lifo-push-safe
    :lifo-peek
    :*overflow-flag*
    :*underflow-flag*))
@@ -258,43 +254,6 @@ but it's still very fast."
   (%queue-flush queue))
 
 
-;; ------- thread safe version -------
-
-(define-speedy-function %enqueue-safe (object queue)
-  "Enqueue OBJECT and increment QUEUE's entry pointer, thread safe."
-  (let ((len (length (the simple-array queue))))
-    (loop (let* ((entry (the fixnum (svref queue 0)))
-                 (new-entry (1+ entry)))
-            (if (< new-entry len)
-                (when (compare-and-swap (svref queue 0) entry new-entry)
-                  (setf (svref queue new-entry) object)
-                  (return object))
-                (return #.*overflow-flag*))))))
-
-(define-speedy-function %dequeue-safe (queue keep-in-queue-p)
-  "DEQUEUE, decrements QUEUE's entry pointer, and returns the previous top ref, thread safe."
-  (loop (let* ((out (the fixnum (svref queue 0)))
-               (new-out (1- out)))
-          (if (/= out 0)
-              (when (compare-and-swap (svref queue 0) out new-out)
-                (if keep-in-queue-p
-                    (return (svref queue out))
-                    (let ((out-val nil))
-                      (rotatef (svref queue out) out-val)
-                      (return out-val))))
-              (return #.*underflow-flag*)))))
-
-(defun enqueue-safe (object queue)
-  "Thread safe version of enqueue."
-  (declare (optimize (speed 3) (safety 0) (debug 0)))
-  (%enqueue-safe object queue))
-
-(defun dequeue-safe (queue &optional (keep-in-queue-p t))
-  "Thread safe version of dequeue."
-  (declare (optimize (speed 3) (safety 0) (debug 0)))
-  (%dequeue-safe queue keep-in-queue-p))
-
-
 (setf (fdefinition 'make-lifo) #'make-queue)
 (setf (fdefinition 'lifo-count) #'queue-count)
 (setf (fdefinition 'lifo-length) #'queue-length)
@@ -302,8 +261,6 @@ but it's still very fast."
 (setf (fdefinition 'lifo-empty-p) #'queue-empty-p)
 (setf (fdefinition 'lifo-push) #'enqueue)
 (setf (fdefinition 'lifo-pop) #'dequeue)
-(setf (fdefinition 'lifo-push-safe) #'enqueue-safe)
-(setf (fdefinition 'lifo-pop-safe) #'dequeue-safe)
 (setf (fdefinition 'lifo-peek) #'queue-peek)
 (setf (fdefinition 'lifo-to-list) #'queue-to-list)
 (setf (fdefinition 'list-to-lifo) #'list-to-queue)
