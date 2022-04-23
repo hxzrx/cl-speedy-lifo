@@ -64,7 +64,10 @@
     (loop (let* ((entry (the fixnum (svref queue 0)))
                  (new-entry (1+ entry)))
             (if (< new-entry len)
-                (when (atomics:cas (svref queue 0) entry new-entry)
+                ;; the dummy checking here is necessary,
+                ;; as that place may not have been written by the dequeue operation at the current time.
+                (when (and (eq (svref queue entry) '#.*dummy*)
+                           (atomics:cas (svref queue 0) entry new-entry))
                   ;; the following setf will not overwrite for a fifo type and thus it will always success,
                   ;; but the action may be taken later
                   (return (setf (svref queue new-entry) object)))
