@@ -1,4 +1,4 @@
-(defpackage #:utils
+(defpackage #:lifo-utils
   (:use :cl)
   (:export
    :define-speedy-function
@@ -10,7 +10,7 @@
    :*overflow-flag*))
 
 (defpackage #:cl-speedy-lifo
-  (:use :cl :utils)
+  (:use :cl :lifo-utils)
   (:nicknames :lifo)
   (:export
    :make-queue
@@ -30,7 +30,7 @@
    :*underflow-flag*))
 
 (defpackage #:cl-speedy-lifo-safe
-  (:use :cl :utils)
+  (:use :cl :lifo-utils)
   (:nicknames :safe-lifo)
   (:export
    :make-queue
