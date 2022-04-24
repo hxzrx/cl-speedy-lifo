@@ -1,10 +1,17 @@
 (in-package :cl-speedy-lifo-tests)
 
+
+(defparameter *enqueue-sum* (make-atomic 0))
+(defparameter *dequeue-sum* (make-atomic 0))
+
+
 (def-suite safe-lifo-test
   :description "cl-speedy-lifo-safe.lisp"
   :in test-suite)
 
+
 (in-suite safe-lifo-test)
+
 
 (test make-queue-safe
   #+sbcl (sb-ext:gc :full t)
@@ -229,4 +236,55 @@
       (when (> (length lst) 0)
         (is (eql nil (eql cl-speedy-lifo-safe:*underflow-flag* (cl-speedy-lifo-safe:dequeue queue t)))))
       (is (eql cl-speedy-lifo-safe:*underflow-flag* (cl-speedy-lifo-safe:dequeue queue t)))
+      )))
+
+(test dequeue-enqueue-mixed-threads
+  #+sbcl (sb-ext:gc :full t)
+  #+ccl (ccl:gc)
+  (dotimes (i 10000);*loop-test-times*)
+    (when (mod (1+ i) 1000) #+sbcl (sb-ext:gc :full t) #+ccl (ccl:gc))
+    (setf *enqueue-sum* (make-atomic 0))
+    (setf *dequeue-sum* (make-atomic 0))
+    (let* ((n (+ 10 (random 10))) ; queue length
+           (queue (cl-speedy-lifo-safe:make-queue n))
+           (push-threads nil)
+           (pop-threads nil)
+           (k (random n)) ; fill num
+           (lst (make-random-list k))
+           (total (apply #'+ lst)))
+      (assert (<= (length lst) (cl-speedy-lifo-safe:queue-length queue)))
+      (dolist (element lst)
+        (let ((ele element)) ; make a bind as the var of element will change and will affect among the threads
+          (push (bt:make-thread #'(lambda ()
+                                    (let ((res (cl-speedy-lifo-safe:enqueue ele queue)))
+                                      (if (integerp res)
+                                          (atomic-incf (atomic-place *enqueue-sum*) res)
+                                          (format t "~&To enqueue: ~d, ret: ~d, queue: ~d~%" ele res queue)))))
+                push-threads)))
+
+      (dolist (element lst)
+        (push (bt:make-thread #'(lambda ()
+                                  (let ((res (cl-speedy-lifo-safe:dequeue queue t)))
+                                    (if (integerp res)
+                                        (atomic-incf (atomic-place *dequeue-sum*) res)
+                                        (format t "~&Dequeue return: ~d, queue: ~d~%" res queue)))))
+              pop-threads))
+
+      (dolist (thread push-threads)
+        (bt:join-thread thread))
+      (dolist (thread pop-threads)
+        (bt:join-thread thread))
+
+      (is (= total (atomic-place *enqueue-sum*)))
+      (is (= total (+ (atomic-place *dequeue-sum*)
+                      (apply #'+ (cl-speedy-lifo-safe:queue-to-list queue)))))
+
+      (unless (cl-speedy-lifo-safe:queue-empty-p queue)
+        (format t "~&queue not empty: ~d~%elements: ~d~%" queue (cl-speedy-lifo-safe:queue-to-list queue)))
+      (unless (= total (+ (atomic-place *dequeue-sum*)
+                          (apply #'+ (cl-speedy-lifo-safe:queue-to-list queue))))
+        (format t "~&~%List: ~d~%" lst)
+        (format t "~&items num: ~d, enqueue sum: ~d, expect sum: ~d~%" k (atomic-place *enqueue-sum*) total)
+        (format t "~&Queue count: ~d~%" (cl-speedy-lifo-safe:queue-count queue))
+        (format t "~&Queue: ~d~%~%" queue))
       )))
