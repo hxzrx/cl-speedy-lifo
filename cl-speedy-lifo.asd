@@ -21,6 +21,7 @@ which is inspired by cl-speedy-queue"
   :components ((:module "test"
                 :serial t
                 :components ((:file "package")
+                             (:file "utils")
                              (:file "speedy-lifo")
                              (:file "speedy-lifo-safe"))))
   :perform (test-op (o s)

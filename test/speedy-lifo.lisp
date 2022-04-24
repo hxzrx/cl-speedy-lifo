@@ -1,17 +1,14 @@
 (in-package :cl-speedy-lifo-tests)
 
-(defparameter *loop-times* 1000)
-
-(defun make-random-list (len &optional (max 5))
-  (loop for i below len
-        collect (random max)))
 
 (def-suite unsafe-lifo-test
   :description "cl-speedy-lifo.lisp"
   ;;:in all-tests)
   :in test-suite)
 
+
 (in-suite unsafe-lifo-test)
+
 
 (test make-queue
   #+sbcl (sb-ext:gc :full t)
