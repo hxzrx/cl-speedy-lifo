@@ -66,7 +66,7 @@
             (if (< new-entry len)
                 ;; the dummy checking here is necessary,
                 ;; as that place may not have been written by the dequeue operation at the current time.
-                (when (and (eq (svref queue entry) '#.*dummy*)
+                (when (and (eq (svref queue new-entry) '#.*dummy*)
                            (atomics:cas (svref queue 0) entry new-entry))
                   ;; the following setf will not overwrite for a fifo type and thus it will always success,
                   ;; but the action may be taken later
