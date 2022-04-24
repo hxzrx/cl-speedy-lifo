@@ -38,7 +38,9 @@
 
 (define-speedy-function %queue-peek (queue)
   "Dereference QUEUE's exit pointer" ; underflow will be checked when this function is called
-  (svref queue (%queue-out queue)))
+  (loop for peek = (svref queue (%queue-out queue))
+        while (eq peek '#.*dummy*)
+        finally (return peek)))
 
 (define-speedy-function %queue-empty-p (queue)
   "Checks whether QUEUE is effectively empty"
@@ -62,7 +64,7 @@
   "Enqueue OBJECT and increment QUEUE's entry pointer, thread safe."
   (let ((len (the fixnum (length (the simple-array queue)))))
     (loop (let* ((entry (the fixnum (svref queue 0)))
-                 (new-entry (1+ entry)))
+                 (new-entry (the fixnum (1+ entry))))
             (if (< new-entry len)
                 ;; the dummy checking here is necessary,
                 ;; as that place may not have been written by the dequeue operation at the current time.
@@ -78,7 +80,7 @@
 (define-speedy-function %dequeue (queue)
   "DEQUEUE, decrements QUEUE's entry pointer, and returns the previous top ref, thread safe."
   (loop (let* ((out (the fixnum (svref queue 0)))
-               (new-out (1- out)))
+               (new-out (the fixnum (1- out))))
           (if (= out 0)
               ;; empty, dequeue will underflow, cas to make sure it's really empty
               (when (atomics:cas (svref queue 0) out out) ; out == 0, dequeue to an empty queue is idempotent
