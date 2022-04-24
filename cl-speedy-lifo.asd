@@ -18,7 +18,11 @@ which is inspired by cl-speedy-queue"
   :depends-on (:cl-speedy-lifo
                :bordeaux-threads
                :fiveam)
-  :components ((:file "tests"))
+  :components ((:module "test"
+                :serial t
+                :components ((:file "package")
+                             (:file "speedy-lifo")
+                             (:file "speedy-lifo-safe"))))
   :perform (test-op (o s)
                     (uiop:symbol-call :fiveam :run!
-                                      (find-symbol* 'all-tests 'cl-speedy-lifo-tests))))
+                                      (find-symbol* 'test-suite 'cl-speedy-lifo-tests))))
