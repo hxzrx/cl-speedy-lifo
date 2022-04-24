@@ -241,7 +241,7 @@
 (test dequeue-enqueue-mixed-threads
   #+sbcl (sb-ext:gc :full t)
   #+ccl (ccl:gc)
-  (dotimes (i 10000);*loop-test-times*)
+  (dotimes (i *loop-times*)
     (when (mod (1+ i) 1000) #+sbcl (sb-ext:gc :full t) #+ccl (ccl:gc))
     (setf *enqueue-sum* (make-atomic 0))
     (setf *dequeue-sum* (make-atomic 0))
@@ -249,7 +249,7 @@
            (queue (cl-speedy-lifo-safe:make-queue n))
            (push-threads nil)
            (pop-threads nil)
-           (k (random n)) ; fill num
+           (k (random (1+ n))) ; fill [0, n] elements
            (lst (make-random-list k))
            (total (apply #'+ lst)))
       (assert (<= (length lst) (cl-speedy-lifo-safe:queue-length queue)))
