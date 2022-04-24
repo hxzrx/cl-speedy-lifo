@@ -3,7 +3,11 @@
 cl-speedy-lifo is a portable, non-consing, optimized lifo queue (stack) implementation,
 which is inspired by cl-speedy-queue <https://github.com/zkat/cl-speedy-queue>.
 
+This library provides both thread unsafe and safe versions of lifo queues.
+
 # API
+
+Unsafe LIFO and safe LIFO have the same apis but in different packages, cl-speedy-lifo and cl-speedy-lifo-safe, respectively.
 
 *[function]* `make-queue size`
 
@@ -35,7 +39,7 @@ which is inspired by cl-speedy-queue <https://github.com/zkat/cl-speedy-queue>.
 
 *[function]* `queue-peek queue`
 
-  Returns the next item that would be dequeued without dequeueing it.
+  Returns the next item that would be dequeued without dequeuing it.
 
 *[function]* `queue-full-p queue`
 
@@ -51,52 +55,20 @@ which is inspired by cl-speedy-queue <https://github.com/zkat/cl-speedy-queue>.
 
 *[function]* `list-to-queue list`
 
- Convert a list to a LIFO queue, with the popping order kept.
-
-*[function]* `make-lifo size`
-  Alias for make-queue.
-
-*[function]* `lifo-count queue`
-  Alias for queue-count.
-
-*[function]* `lifo-length queue`
-  Alias for queue-length.
-
-*[function]* `lifo-full-p queue`
-  Alias for queue-full-p.
-
-*[function]* `lifo-empty-p queue`
-  Alias for queue-empty-p.
-
-*[function]* `lifo-to-list queue`
-  Alias for queue-to-list.
-
-*[function]* `list-to-lifo queue`
-  Alias for list-to-queue.
-
-*[function]* `lifo-push object queue`
-  Alias for enqueue.
-
-*[function]* `lifo-pop queue`
-  Alias for dequeue.
-
-*[function]* `lifo-peek queue`
-  Alias for queue-peek.
-
 
 # Performance
 
 Now let's compared the time costs of push+pop operations, for this speedy-lifo and the build-in list.
 
-| 10^n | LIFO Queue (without consing timed) | LIFO Queue(with consing timed) |            LIST Queue             |
-| :--: | :--------------------------------: | :----------------------------: | :-------------------------------: |
-|  3   |               0.000                |             0.000              |               0.000               |
-|  4   |               0.000                |             0.000              |               0.000               |
-|  5   |               0.000                |             0.000              |               0.000               |
-|  6   |               0.016                |             0.016              |               0.012               |
-|  7   |               0.128                |             0.140              |               0.136               |
-|  8   |               1.248                |             1.476              |               2.548               |
-|  9   |               12.560               |             16.376             |                 -                 |
+| 10^n | Unsafe LIFO Queue | Safe LIFO Queue | LIST Queue |
+| :--: | :---------------: | :-------------: | :--------: |
+|  3   |       0.000       |      0.000      |   0.000    |
+|  4   |       0.000       |      0.000      |   0.000    |
+|  5   |       0.000       |      0.004      |   0.000    |
+|  6   |       0.020       |      0.028      |   0.011    |
+|  7   |       0.164       |      0.280      |   0.124    |
+|  8   |       1.476       |      2.832      |   1.636    |
+|  9   |      16.668       |     30.392      |     -      |
 
 All time units are in seconds.
 Note that when timing the push+pop operations with LIST Queue for 10^9 times, sbcl's heap exhausted during garbage collection.
@@ -104,25 +76,24 @@ Note that when timing the push+pop operations with LIST Queue for 10^9 times, sb
 
 ```commonlisp
 (dolist (num *times*)
-  (format t "LIFO queue, push+pop, without consing timed: 10^~d times.~%" (log num 10))
-  (sb-ext:gc :full t)
-  (let ((lifo-queue (make-queue num)))
-    (time (progn
-            (dotimes (i num)
-              (enqueue i lifo-queue))
-            (dotimes (i num)
-              (dequeue lifo-queue nil))))))
-```
-
-```commonlisp
-(dolist (num *times*)
-  (format t "LIFO queue, push+pop, with consing timed: 10^~d times.~%" (log num 10))
+  (format t "Unsafe LIFO queue, push+pop, with consing timed: 10^~d times.~%" (log num 10))
   (sb-ext:gc :full t)
   (time (let ((lifo-queue (make-queue num)))
           (dotimes (i num)
             (enqueue i lifo-queue))
           (dotimes (i num)
             (dequeue lifo-queue nil)))))
+```
+
+```commonlisp
+(dolist (num *times*)
+  (format t "Safe LIFO queue, push+pop, with consing timed: 10^~d times.~%" (log num 10))
+  (sb-ext:gc :full t)
+  (time (let ((lifo-queue (cl-speedy-lifo-safe:make-queue num)))
+          (dotimes (i num)
+            (cl-speedy-lifo-safe:enqueue i lifo-queue))
+          (dotimes (i num)
+            (cl-speedy-lifo-safe:dequeue lifo-queue nil)))))
 ```
 
 ```commonlisp
