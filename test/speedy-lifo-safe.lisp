@@ -259,7 +259,7 @@
                                     (let ((res (cl-speedy-lifo-safe:enqueue ele queue)))
                                       (if (integerp res)
                                           (atomic-incf (atomic-place *enqueue-sum*) res)
-                                          (format t "~&To enqueue: ~d, ret: ~d, queue: ~d~%" ele res queue)))))
+                                          #+:ignore(format t "~&To enqueue: ~d, ret: ~d, queue: ~d~%" ele res queue)))))
                 push-threads)))
 
       (dolist (element lst)
@@ -267,7 +267,7 @@
                                   (let ((res (cl-speedy-lifo-safe:dequeue queue t)))
                                     (if (integerp res)
                                         (atomic-incf (atomic-place *dequeue-sum*) res)
-                                        (format t "~&Dequeue return: ~d, queue: ~d~%" res queue)))))
+                                        #+:ignore(format t "~&Dequeue return: ~d, queue: ~d~%" res queue)))))
               pop-threads))
 
       (dolist (thread push-threads)
@@ -279,9 +279,9 @@
       (is (= total (+ (atomic-place *dequeue-sum*)
                       (apply #'+ (cl-speedy-lifo-safe:queue-to-list queue)))))
 
-      (unless (cl-speedy-lifo-safe:queue-empty-p queue)
+      #+:ignore(unless (cl-speedy-lifo-safe:queue-empty-p queue)
         (format t "~&queue not empty: ~d~%elements: ~d~%" queue (cl-speedy-lifo-safe:queue-to-list queue)))
-      (unless (= total (+ (atomic-place *dequeue-sum*)
+      #+:ignore(unless (= total (+ (atomic-place *dequeue-sum*)
                           (apply #'+ (cl-speedy-lifo-safe:queue-to-list queue))))
         (format t "~&~%List: ~d~%" lst)
         (format t "~&items num: ~d, enqueue sum: ~d, expect sum: ~d~%" k (atomic-place *enqueue-sum*) total)
