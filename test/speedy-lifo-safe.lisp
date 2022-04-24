@@ -245,11 +245,11 @@
     (when (mod (1+ i) 1000) #+sbcl (sb-ext:gc :full t) #+ccl (ccl:gc))
     (setf *enqueue-sum* (make-atomic 0))
     (setf *dequeue-sum* (make-atomic 0))
-    (let* ((n (+ 10 (random 10))) ; queue length
+    (let* ((n (+ 2 (random 10))) ; queue length
            (queue (cl-speedy-lifo-safe:make-queue n))
            (push-threads nil)
            (pop-threads nil)
-           (k (random (1+ n))) ; fill [0, n] elements
+           (k (random (1+ n))) ; randomly fill [0, n] itmes
            (lst (make-random-list k))
            (total (apply #'+ lst)))
       (assert (<= (length lst) (cl-speedy-lifo-safe:queue-length queue)))
