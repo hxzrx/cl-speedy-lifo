@@ -2,7 +2,7 @@
   :author "He Xiangzhi <hexiangzhi@gmail.com>"
   :licence "MIT"
   :description "cl-speedy-lifo is a portable, non-consing, optimized LIFO queue (stack) implementation,
-which is inspired by cl-speedy-queue"
+which is inspired by cl-speedy-queue."
   :depends-on (:atomics)
   :serial t
   :in-order-to ((test-op (test-op "cl-speedy-lifo/tests")))
