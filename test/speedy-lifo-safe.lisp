@@ -25,9 +25,9 @@
             do (progn
                  ;;(is (= 0 (queue-count queue)))
                  ;;(is (= n (queue-length queue)))
-                 (if (= i 0)
-                     (is (= 0 (svref queue i)))
-                     (is (eq cl-speedy-lifo-safe::*dummy* (svref queue i)))))))))
+                 (cond ((= i 0) (is (= (1- cl-speedy-lifo-safe:*queue-start*) (svref queue i))))
+                       ((>= i cl-speedy-lifo-safe:*queue-start*) (is (eq cl-speedy-lifo-safe::*dummy* (svref queue i))))
+                       (t t)))))))
 
 (test queue-count/queue-length/enqueue/-num-safe
   #+sbcl (sb-ext:gc :full t)
