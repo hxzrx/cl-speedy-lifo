@@ -3,21 +3,24 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defconstant *dummy* '!dummy!)
-  (defconstant *max-queue-length* (expt 10 10)))
+  (defparameter *queue-start* 3) ; the first index of queue contents, so the cells in interval (0, *queue-start*) are reserved.
+  (defparameter *max-queue-length* (+ *queue-start* (expt 10 10))))
 
 
 (define-speedy-function %make-queue (length)
   "Creates a new queue of maximum size LENGTH"
   (declare (fixnum length))
-  (let ((queue (make-array (the fixnum (+ 1 length)) :initial-element '#.*dummy*)))
+  (let ((queue (make-array (the fixnum (+ #.*queue-start* length)) :initial-element '#.*dummy*)))
     ;; the 0th place, the queue's entry pointer,
     ;; stores the index of the top of the lifo queue, and (= (svref queue 0) 0) shows an empty queue
-    (setf (svref queue 0) 0)
+    (setf (svref queue 0) #.(1- *queue-start*))
+    (loop for i from 1 below #.*queue-start*
+          do (setf (svref queue i) nil))
     queue))
 
 (define-speedy-function %queue-length (queue)
   "Returns QUEUE's maximum length"
-  (the fixnum (- (length (the simple-vector queue)) 1)))
+  (the fixnum (- (length (the simple-vector queue)) #.*queue-start*)))
 
 (define-speedy-function queuep (x)
   "If this returns NIL, X is not a queue"
@@ -44,17 +47,17 @@
 
 (define-speedy-function %queue-empty-p (queue)
   "Checks whether QUEUE is effectively empty"
-  (= (the fixnum (svref queue 0)) 0))
+  (= (the fixnum (svref queue 0)) (1- #.*queue-start*)))
 
 (define-speedy-function %queue-full-p (queue)
   "Checks whether QUEUE is effectively full"
-  (= (the fixnum (svref queue 0)) (1- (length queue))))
+  (= (the fixnum (svref queue 0)) (- (length queue) #.*queue-start*)))
 
 (define-speedy-function %queue-count (queue)
   "Returns QUEUE's effective length"
-  (if (= (the fixnum (svref queue 0)) 0)
+  (if (= (the fixnum (svref queue 0)) #.(1- *queue-start*))
       0
-      (the fixnum (svref queue 0))))
+      (the fixnum (- (the fixnum (svref queue 0)) #.(1- *queue-start*)))))
 
 (define-speedy-function %next-index (current-index)
   (declare (fixnum current-index))
@@ -81,9 +84,10 @@
   "DEQUEUE, decrements QUEUE's entry pointer, and returns the previous top ref, thread safe."
   (loop (let* ((out (the fixnum (svref queue 0)))
                (new-out (the fixnum (1- out))))
-          (if (= out 0)
+          (if (= out #.(1- *queue-start*))
               ;; empty, dequeue will underflow, cas to make sure it's really empty
               (when (atomics:cas (svref queue 0) out out) ; out == 0, dequeue to an empty queue is idempotent
+                ;;(format t "~&flowInSpeedy~%")
                 (return #.*underflow-flag*))
               ;; since the setf action for this place may be taken future in some time,
               ;; the svref action should make sure this place has been setf successfully,
@@ -144,7 +148,7 @@
   "Convert a LIFO queue to a list, with the popping order kept."
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   (declare (simple-vector queue))
-  (reverse (coerce (subseq queue 1 (1+ (the fixnum (svref queue 0)))) 'list)))
+  (reverse (coerce (subseq queue #.*queue-start* (1+ (the fixnum (svref queue 0)))) 'list)))
 
 (defun list-to-queue (lst)
   "Convert a list to a LIFO queue, with the popping order kept."
