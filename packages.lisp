@@ -48,5 +48,7 @@
    :queue-find
    :queue-flush
    :make-lifo
+   :*queue-start*
+   :*max-queue-length*
    :*overflow-flag*
    :*underflow-flag*))
