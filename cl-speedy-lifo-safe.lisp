@@ -3,7 +3,7 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defconstant *dummy* '!dummy!)
-  (defparameter *queue-start* 3) ; the first index of queue contents, so the cells in interval (0, *queue-start*) are reserved.
+  (defparameter *queue-start* 1) ; the first index of queue contents, so the cells in interval (0, *queue-start*) are reserved.
   (defparameter *max-queue-length* (+ *queue-start* (expt 10 10))))
 
 
