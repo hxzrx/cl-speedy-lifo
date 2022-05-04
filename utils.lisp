@@ -2,8 +2,8 @@
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defvar *overflow-flag* :overflow-A6AC128A-4385-4C54-B384-8D687456C10A)
-  (defvar *underflow-flag* :underflow-80B88679-7DD0-499E-BAE9-673167980515))
+  (defvar *overflow-flag* :OVERFLOW-6D15C000-009B-11C5-8CB8-000C299C8335)
+  (defvar *underflow-flag* :UNDERFLOW-1FDDC000-E776-11C4-8FB4-000C299C8335))
 
 
 (defmacro define-speedy-function (name args &body body)
