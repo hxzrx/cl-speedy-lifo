@@ -8,8 +8,7 @@ which is inspired by cl-speedy-queue."
   :in-order-to ((test-op (test-op "cl-speedy-lifo/tests")))
   :components ((:file "packages")
                (:file "utils")
-               (:file "cl-speedy-lifo")
-               (:file "cl-speedy-lifo-safe")))
+               (:file "cl-speedy-lifo")))
 
 (defsystem "cl-speedy-lifo/tests"
   :author "He Xiang-zhi"
@@ -22,8 +21,8 @@ which is inspired by cl-speedy-queue."
                 :serial t
                 :components ((:file "package")
                              (:file "utils")
-                             (:file "speedy-lifo")
-                             (:file "speedy-lifo-safe"))))
+                             (:file "speedy-lifo"))))
+
   :perform (test-op (o s)
                     (uiop:symbol-call :fiveam :run!
                                       (find-symbol* 'test-suite 'cl-speedy-lifo-tests))))

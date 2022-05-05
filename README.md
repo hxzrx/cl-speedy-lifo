@@ -3,11 +3,7 @@
 cl-speedy-lifo is a portable, non-consing, optimized lifo queue (stack) implementation,
 which is inspired by cl-speedy-queue <https://github.com/zkat/cl-speedy-queue>.
 
-This library provides both thread unsafe and safe versions of lifo queues.
-
 # API
-
-Unsafe LIFO and safe LIFO have the same apis but in different packages, cl-speedy-lifo and cl-speedy-lifo-safe, respectively.
 
 *[function]* `make-queue size`
 
@@ -23,7 +19,7 @@ Unsafe LIFO and safe LIFO have the same apis but in different packages, cl-speed
 
 *[function]* `dequeue queue keep-in-queue`
 
-  Dequeues QUEUE. If keep-in-queue sets to nil, the dequeued val will no longer keep an ref in the queue.
+  Dequeues QUEUE. If keep-in-queue sets to nil, the dequeued items will no longer keep an ref in the queue.
 
 *[function]* `dequeue-safe queue keep-in-queue`
 
@@ -60,15 +56,15 @@ Unsafe LIFO and safe LIFO have the same apis but in different packages, cl-speed
 
 Now let's compared the time costs of push+pop operations, for this speedy-lifo and the build-in list.
 
-| 10^n | Unsafe LIFO Queue | Safe LIFO Queue | LIST Queue |
-| :--: | :---------------: | :-------------: | :--------: |
-|  3   |       0.000       |      0.000      |   0.000    |
-|  4   |       0.000       |      0.000      |   0.000    |
-|  5   |       0.000       |      0.004      |   0.000    |
-|  6   |       0.020       |      0.028      |   0.011    |
-|  7   |       0.164       |      0.280      |   0.124    |
-|  8   |       1.476       |      2.832      |   1.636    |
-|  9   |      16.668       |     30.392      |     -      |
+| 10^n | Unsafe LIFO Queue | LIST Queue |
+| :--: | :---------------: | :--------: |
+|  3   |       0.000       |   0.000    |
+|  4   |       0.000       |   0.000    |
+|  5   |       0.000       |   0.000    |
+|  6   |       0.020       |   0.011    |
+|  7   |       0.164       |   0.124    |
+|  8   |       1.476       |   1.636    |
+|  9   |      16.668       |     -      |
 
 All time units are in seconds.
 Note that when timing the push+pop operations with LIST Queue for 10^9 times, sbcl's heap exhausted during garbage collection.
@@ -83,17 +79,6 @@ Note that when timing the push+pop operations with LIST Queue for 10^9 times, sb
             (enqueue i lifo-queue))
           (dotimes (i num)
             (dequeue lifo-queue nil)))))
-```
-
-```commonlisp
-(dolist (num *times*)
-  (format t "Safe LIFO queue, push+pop, with consing timed: 10^~d times.~%" (log num 10))
-  (sb-ext:gc :full t)
-  (time (let ((lifo-queue (cl-speedy-lifo-safe:make-queue num)))
-          (dotimes (i num)
-            (cl-speedy-lifo-safe:enqueue i lifo-queue))
-          (dotimes (i num)
-            (cl-speedy-lifo-safe:dequeue lifo-queue nil)))))
 ```
 
 ```commonlisp
